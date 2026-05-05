@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Servicio 1: Servidor Web (Nginx)
+  web-server:
+    build: ./nginx-server
+    image: ${NGINX_IMAGE}
+    ports:
+      - "${NGINX_PORT_EXT}:80"
+    networks:
+      - gsx-network
+    restart: always
+
+  # Servicio 2: App Backend (Python)
+  python-app:
+    build: ./python-app
+    image: ${PYTHON_IMAGE}
+    ports:
+      - "${PYTHON_PORT_EXT}:8000"
+    networks:
+      - gsx-network
+    volumes:
+      - python_data:/app/data
+    restart: always
+
+# Definición de Redes
+networks:
+  gsx-network:
+    driver: bridge
+
+# Definición de Volumen
+volumes:
+  python_data: # Este volumen sobrevivirá al reinicio
