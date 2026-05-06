@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # Servicio 1: Servidor Web (Nginx)
   web-server:
-    build: ./nginx-server
+    build: ../nginx-server
     image: ${NGINX_IMAGE}
     ports:
       - "${NGINX_PORT_EXT}:80"
@@ -13,7 +11,7 @@ services:
 
   # Servicio 2: App Backend (Python)
   python-app:
-    build: ./python-app
+    build: ../python-app
     image: ${PYTHON_IMAGE}
     ports:
       - "${PYTHON_PORT_EXT}:8000"
