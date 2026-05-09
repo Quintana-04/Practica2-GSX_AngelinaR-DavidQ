@@ -141,6 +141,33 @@ Explicacion:
 
 
 # WEEK 10
+
+### ------ Deployment ------
+Es un recurso que proporciona actualizaciones declarativas para los Pods y ReplicaSets. Se encarga de mantener el número deseado de réplicas en funcionamiento y gestiona los ciclos de vida de las aplicaciones, permitiendo actualizaciones progresivas sin tiempo de inactividad.
+
+### ------ Service ------
+Es una abstracción que define un conjunto lógico de Pods y una política para acceder a ellos. Los Pods son efímeros y sus direcciones IP cambian al reiniciarse, el Service proporciona una dirección IP estable y un nombre de DNS para que otros servicios puedan localizarlos.
+
+### ------ ConfigMap ------
+Es un objeto de la API de Kubernetes utilizado para almacenar datos no confidenciales en pares clave-valor. Permite desacoplar la configuración del entorno de las imágenes de los contenedores, lo que facilita la portabilidad de las aplicaciones entre desarrollo y producción sin cambiar el código.
+
+
+- How do pods communicate?
+Los Pods se comunican entre sí utilizando el Service Discovery interno del clúster. Kubernetes asigna un nombre de DNS a cada Service (ej. backend-service), permitiendo que el servidor web llegue al backend simplemente llamando a http://backend-service:8000 sin conocer la IP real de los Pods.
+
+- How do external clients reach services?
+Se utiliza un servicio de tipo NodePort para el servidor web. Esto expone un puerto específico en todas las IPs de los nodos del clúster, permitiendo que el tráfico externo sea redirigido desde el host hacia el Service y finalmente a los Pods.
+
+### Scalling Behavior
+El escalado en Kubernetes es declarativo y responde al cambio en el número de replicas definido en el Deployment:
+
+    1. Scale Up: Al aumentar las réplicas el Control Plane detecta la discrepancia y crea nuevos Pods, programándolos en los nodos disponibles.
+    
+    2. Scale Down: Al reducir las réplicas, Kubernetes selecciona Pods para su terminación, asegurando un cierre ordenado hasta alcanzar el número exacto solicitado.
+
+La resiliencia de Kubernetes hace que si un Pod se elimina manualmente o falla, Kubernetes lo detecta mediante su bucle de control y crea uno nuevo automáticamente para mantener siempre el número deseado de réplicas.
+
+
 Primero comprobamos si ya tenemos minikube instalado:
 ```
 minikube version
@@ -160,4 +187,9 @@ sudo apt install -y kubectl
 ```
 
 Ahora ya si podemos empezar el cluster
+
+1. Ejecutar ```minikube start``` y confirmar con ```kubectl cluster-info```
+
+
+
 
