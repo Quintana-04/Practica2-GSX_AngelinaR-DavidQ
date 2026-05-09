@@ -139,3 +139,25 @@ Explicacion:
 - Configuración: Se utiliza un archivo .env para centralizar variables como puertos y versiones, evitando valores fijos (hardcoded) en el código.
 - Persistencia: Un volumen gestionado garantiza que los datos críticos del backend sobrevivan a reinicios o paradas de los contenedores.
 
+
+# WEEK 10
+Primero comprobamos si ya tenemos minikube instalado:
+```
+minikube version
+```
+
+Si no lo tenemos, lo instalamos. Para ello tenemos que realizar los siguientes comandos:
+```
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+```
+Importante luego borrar el primer archivo descargado ya que pesa mucho y no es necesario
+
+Para acabar de hacer la instalacion tambien tenemo que descargar kubectl
+```
+sudo apt update
+sudo apt install -y kubectl
+```
+
+Ahora ya si podemos empezar el cluster
+

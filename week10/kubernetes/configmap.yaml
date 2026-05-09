@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gsx-config
+data:
+  python_port: "8000"
+  nginx_port: "80"
