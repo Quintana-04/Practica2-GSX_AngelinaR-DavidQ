@@ -186,10 +186,26 @@ sudo apt update
 sudo apt install -y kubectl
 ```
 
+Finalmente borramos el binario inneceario que pesa bastante ya que no nos hace mas falta:
+```
+rm minikube-linux-amd64
+```
+
 Ahora ya si podemos empezar el cluster
 
 1. Ejecutar ```minikube start``` y confirmar con ```kubectl cluster-info```
 
+2. Los manifest files se encuentran en la carpeta ~/week10/kubernetes
 
+3. Primero ejecutamos ```kubectl apply -f kubernetes/``` y comprobamos con ```kubectl get pods```
 
+4. Para comprorbarlo ejecutamos ```kubectl get services```
+
+5. Ejecutamos ```kubectl exec -it <pod-name> -- bash``` donde '<pod-name>' es el nombre del pod de nginx que hemos obtenido antes (ej. nginx-deployment-79d68f94d-wdvvp) y una vez dentro de ese bash hacemos ```curl http://backend-service:8000``` y veremos que responde como esperamos con un mensaje de 'Hello from container...'.
+
+6. Para escalar tenemos que ejecutar ```kubectl scale deployment nginx-deployment --replicas=3```. Despues hacemos ```kubectl get pods --watch``` para ver como se han creado nuevos pods. Por ultimo hacemos ```kubectl scale deployment nginx-deployment --replicas=1``` y volvemos a mirar los pods para comprobar que se han eliminado dos y no hemos quedado otra vez con 1.
+
+7. Hacemos ```kubectl delete pod <pod-name>``` para forzar a borrar un pod y mostrar que kubernetes creara uno nuevo de forma inmediata para mantener el estado deseado, lo comprobamos otra vez con ```kubectl get pods --watch```.
+
+8. Ejecutamos ```kubectl describe configmap gsx-config``` para enseñar que usamos un configmap para la configuracion de los puertos.
 
