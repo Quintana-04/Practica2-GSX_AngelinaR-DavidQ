@@ -1,1 +1,5 @@
 .env
+week11/terraform/.terraform/
+week11/terraform/terraform.tfstate*
+week11/terraform/.terraform/
+week11/terraform/terraform.tfstate*
