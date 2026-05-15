@@ -209,3 +209,108 @@ Ahora ya si podemos empezar el cluster
 
 8. Ejecutamos ```kubectl describe configmap gsx-config``` para enseñar que usamos un configmap para la configuracion de los puertos.
 
+
+# WEEK 11
+
+### ------ Herramienta IaC elegida: Terraform ------
+Hemos elegido **Terraform** porque describe el estado final deseado y calcula automáticamente los pasos para llegar a él. Es idempotente: ejecutarlo dos veces sobre el mismo estado no hace nada.
+
+### ------ Instalación de Terraform ------
+Primero comprobamos si ya tenemos Terraform instalado:
+```
+terraform -v
+```
+
+Si no lo tenemos, lo instalamos:
+```
+wget -O /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_linux_amd64.zip
+unzip /tmp/terraform.zip -d /tmp/
+sudo mv /tmp/terraform /usr/local/bin/
+terraform -v
+```
+
+### ------ Estructura del código ------
+Los archivos de Terraform se encuentran en `week11/terraform/`:
+- `main.tf` — Define todos los recursos Kubernetes (ConfigMap, Deployments, Services)
+- `variables.tf` — Parámetros configurables (usuario Docker Hub, tag de imagen, réplicas, puertos)
+- `outputs.tf` — Información útil tras el despliegue (NodePort, nombre del servicio, imágenes desplegadas)
+
+### ------ Despliegue con Terraform ------
+
+1. Inicializar Terraform:
+```
+cd week11/terraform
+terraform init
+```
+
+2. Ver qué se va a crear:
+```
+terraform plan
+```
+
+3. Aplicar (crear recursos en Minikube):
+```
+terraform apply
+```
+
+4. Verificar que todo está correcto:
+```
+kubectl get pods
+kubectl get services
+```
+
+5. Para demostrar que la infraestructura es reproducible desde cero (destroy + apply):
+```
+terraform destroy
+terraform apply
+```
+
+6. Para desplegar con un tag de imagen concreto (ej. SHA generado por CI):
+```
+terraform apply -var="image_tag=a1b2c3d4"
+```
+
+### ------ Variables ------
+| Variable | Descripción | Valor por defecto |
+|---|---|---|
+| `dockerhub_user` | Usuario de Docker Hub | `quinti04` |
+| `image_tag` | Tag de imagen a desplegar | `v1` |
+| `backend_replicas` | Réplicas del backend Python | `1` |
+| `nginx_replicas` | Réplicas del servidor Nginx | `1` |
+| `backend_port` | Puerto del backend | `8000` |
+| `nginx_port` | Puerto de Nginx | `80` |
+
+### ------ CI/CD Pipeline (GitHub Actions) ------
+El workflow se encuentra en `.github/workflows/ci.yml` y se dispara automáticamente en cada push a `main`.
+
+**¿Qué hace el CI?**
+1. Construye las imágenes Docker de Nginx y Python
+2. Las sube a Docker Hub con el SHA corto del commit como tag (ej. `a1b2c3d4`) y también como `latest`
+3. Valida el código Terraform (`fmt`, `init`, `validate`) sin tocar Minikube
+
+**¿Por qué no despliega en Minikube desde GitHub Actions?**
+GitHub Actions corre en servidores remotos y no tiene acceso a nuestro Minikube local. Por eso el CD (despliegue) se hace manualmente en local con `terraform apply`.
+
+**Flujo completo:**
+```
+git push → CI verde (imágenes en Docker Hub) → terraform apply -var="image_tag=<sha>" → Minikube actualizado
+```
+
+### ------ ¿Por qué versionar la infraestructura? ------
+Tener el código de infraestructura en Git significa que cualquier cambio queda registrado: quién lo hizo, cuándo y por qué. Si algo se rompe, se puede volver a un estado anterior. Además, cualquier miembro del equipo puede reproducir el entorno exacto desde cero sin depender de configuraciones manuales o de memoria.
+
+### ------ ¿Cómo aseguramos que los cambios son seguros? ------
+Siempre ejecutamos `terraform plan` antes de `terraform apply`. El plan muestra exactamente qué se va a crear, modificar o destruir sin tocar nada. Esto permite revisar los cambios antes de aplicarlos y detectar errores. Además, el CI valida el código Terraform en cada push, asegurando que el código es sintácticamente correcto antes de llegar a producción.
+
+### ------ Verificación ------
+Para verificar que todo funciona correctamente ejecutar el script:
+```
+./week11/check11.sh
+```
+
+El script comprueba:
+- Pods en estado Running
+- Services activos
+- Nginx responde en http://192.168.49.2:30080
+- Backend responde con "Hello from container - GreenDevCorp Python App"
+
