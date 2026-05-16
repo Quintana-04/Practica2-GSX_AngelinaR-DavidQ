@@ -369,3 +369,54 @@ El script comprueba:
 ## ------ Investigación ------
 
 La investigación completa sobre DNS, DHCP, NTP, autenticación/autorización, LDAP, Active Directory, SSO y la recomendación de identidad para GreenDevCorp se encuentra en `week12/research.md`.
+
+
+# WEEK 13
+
+## ------ Challenge B: Full Integration Test ------
+
+### Objetivo
+Demostrar que toda la infraestructura se puede desplegar desde cero usando únicamente el código del repositorio.
+
+### Pasos realizados
+
+1. Borrar toda la infraestructura existente:ç
+```
+kubectl delete all --all
+kubectl get pods  # verificar que no hay nada
+```
+2. Desplegar desde Terraform (IaC):
+```
+cd week11/terraform
+terraform apply -auto-approve
+```
+Terraform vuelve a crear los 4 recursos (2 Deployments + 2 Services) 
+
+3. Aplicar NetworkPolicies de week12:
+```
+kubectl apply -f week12/kubernetes/
+```
+4. Verificar que todo funciona:
+```
+kubectl get pods     # ambos pods en Running
+kubectl get services # web-service (NodePort) y backend-service (ClusterIP)
+```
+5. Ejecutar script de verificación completo:
+```
+bash week12/check12.sh
+```
+
+## ------ Challenge C: Documentación ------
+
+El runbook operacional completo se encuentra en `week13/runbook.md` e incluye:
+- Descripción detallada de cada componente (Nginx, Backend, ConfigMap, NetworkPolicies)
+- Quick Start: pasos para desplegar el sistema desde cero
+- Operaciones comunes: escalar, ver logs, reiniciar, hacer rollback
+- Guía de troubleshooting: problemas comunes y cómo diagnosticarlos
+- Links a toda la documentación del proyecto
+
+El diagrama de arquitectura de red se encuentra en `week12/network-architecture.png` (hecho con draw.io).
+
+## ------ Challenge D: Reflection Essay ------
+
+El essay de reflexión individual se encuentra en `week13/reflexion_Angelina.md` y `week13/reflecxion_David.md`
