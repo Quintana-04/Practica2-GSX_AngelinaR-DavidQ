@@ -314,3 +314,58 @@ El script comprueba:
 - Nginx responde en http://192.168.49.2:30080
 - Backend responde con "Hello from container - GreenDevCorp Python App"
 
+# WEEK 12
+
+## ------ Diseño de Red ------
+
+### Diagrama de Arquitectura
+
+<img width="1219" height="849" alt="diagramagsx drawio" src="https://github.com/user-attachments/assets/830e6dbf-99f0-494a-ab34-1333cc756ce5" />
+
+
+### Plan CIDR
+
+| Subred | Rango | IPs disponibles | Uso |
+|---|---|---|---|
+| 10.0.0.0/24 | DMZ | 254 | Nginx, load balancer, acceso externo |
+| 10.0.1.0/24 | Development | 254 | Pods y servicios de desarrollo |
+| 10.0.2.0/24 | Staging | 254 | Entorno de pruebas pre-producción |
+| 10.0.3.0/24 | Production | 254 | Servicios en producción |
+| 10.0.4.0/24 | Database | 254 | BBDDs, solo accesible desde producción |
+| 10.0.10.0/24 | Partners | 254 | Acceso externo limitado, solo DMZ |
+
+Usamos `10.0.0.0/16` para toda la organización, lo que deja margen para crecer sin rehacer el esquema. Cada entorno tiene su propio `/24` para un aislamiento claro entre desarrollo, staging y producción.
+
+## ------ NetworkPolicies ------
+
+Los manifests se encuentran en `week12/kubernetes/`. Implementan las siguientes reglas:
+
+- **default-deny-all**: deniega todo el tráfico entrante y saliente por defecto
+- **allow-dns**: permite consultas DNS (puerto 53) para todos los pods
+- **allow-external-to-nginx**: permite tráfico externo hacia Nginx (puerto 80)
+- **allow-nginx-to-backend**: permite que Nginx reciba tráfico del backend (puerto 8000)
+- **allow-nginx-egress-to-backend**: permite que Nginx inicie conexiones hacia el backend
+
+### Verificación
+
+Para verificar que las políticas funcionan correctamente:
+```
+bash week12/check12.sh
+```
+
+El script comprueba:
+- NetworkPolicies activas en el clúster
+- Tráfico externo → Nginx: **permitido**
+- Nginx → Backend: **permitido**
+- Backend → Exterior: **bloqueado** (segmentación funciona)
+
+### Fronteras de Seguridad
+
+- El tráfico entre entornos (dev/staging/prod) está bloqueado por defecto
+- Solo Nginx puede recibir tráfico externo
+- El backend solo es accesible desde Nginx
+- Los partners solo tienen acceso a la DMZ
+
+## ------ Investigación ------
+
+La investigación completa sobre DNS, DHCP, NTP, autenticación/autorización, LDAP, Active Directory, SSO y la recomendación de identidad para GreenDevCorp se encuentra en `week12/research.md`.
